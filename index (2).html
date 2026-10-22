@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atrasos Escolares</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #eef5fc;
+    color: #17365d;
+}
+
+header {
+    background: #0756a8;
+    color: white;
+    text-align: center;
+    padding: 24px 15px;
+    border-bottom: 8px solid #ef4d9b;
+}
+
+header h1 {
+    margin: 0;
+}
+
+header p {
+    margin-bottom: 0;
+}
+
+main {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 15px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 3px 12px #0001;
+}
+
+h2 {
+    color: #0756a8;
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    margin-top: 14px;
+    font-weight: bold;
+}
+
+input, select, textarea, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 7px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+input, select, textarea {
+    border: 1px solid #cbd8e6;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+button {
+    border: none;
+    background: #0756a8;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.whatsapp {
+    background: #198754;
+}
+
+.apagar {
+    background: #ef4d9b;
+}
+
+.registro {
+    padding: 12px;
+    background: #eef5fc;
+    border-left: 4px solid #ef4d9b;
+    border-radius: 8px;
+    margin-top: 12px;
+    overflow-wrap: anywhere;
+}
+
+.registro p {
+    margin: 7px 0;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: #0756a8;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>📚 Atrasos Escolares</h1>
+    <p>Espírito Santo — Trabalha e Confia</p>
+</header>
+
+<main>
+
+<section class="card">
+    <h2>Registrar atraso</h2>
+
+    <form id="formulario">
+
+        <label for="aluno">Nome do aluno</label>
+        <input
+            id="aluno"
+            type="text"
+            placeholder="Digite o nome do aluno"
+            required
+        >
+
+        <label for="turma">Turma</label>
+        <input
+            id="turma"
+            type="text"
+            placeholder="Ex.: 8º Ano A"
+            required
+        >
+
+        <label for="telefone">WhatsApp do responsável</label>
+        <input
+            id="telefone"
+            type="tel"
+            placeholder="DDD + número"
+            required
+        >
+
+        <label for="horario">Horário de chegada</label>
+        <input
+            id="horario"
+            type="time"
+            required
+        >
+
+        <label for="motivo">Motivo do atraso</label>
+        <select id="motivo" required>
+            <option value="">Selecione o motivo</option>
+            <option>Transporte</option>
+            <option>Problemas de saúde</option>
+            <option>Consulta médica</option>
+            <option>Chuva</option>
+            <option>Questões familiares</option>
+            <option>Outros</option>
+        </select>
+
+        <label for="justificativa">Justificativa</label>
+        <textarea
+            id="justificativa"
+            placeholder="Informe a justificativa do aluno"
+        ></textarea>
+
+        <button type="submit">
+            Registrar atraso
+        </button>
+
+        <button
+            type="button"
+            class="whatsapp"
+            onclick="enviarWhatsApp()"
+        >
+            📲 Enviar pelo WhatsApp
+        </button>
+
+    </form>
+</section>
+
+<section class="card" style="margin-top:20px">
+    <h2>📋 Histórico de atrasos</h2>
+
+    <div id="historico"></div>
+
+    <button
+        type="button"
+        class="apagar"
+        onclick="apagarHistorico()"
+    >
+        Apagar histórico
+    </button>
+</section>
+
+</main>
+
+<footer>
+    <strong>AZUL • BRANCO • ROSA</strong>
+    <p>Tecnologia a favor da educação.</p>
+</footer>
+
+<script>
+const formulario = document.getElementById("formulario");
+
+let registros = JSON.parse(
+    localStorage.getItem("atrasos_escolares") || "[]"
+);
+
+let ultimoRegistro = null;
+
+document.getElementById("horario").value =
+    new Date().toTimeString().slice(0, 5);
+
+function salvarDados() {
+    localStorage.setItem(
+        "atrasos_escolares",
+        JSON.stringify(registros)
+    );
+}
+
+function registrarHistorico() {
+    const historico = document.getElementById("historico");
+
+    historico.replaceChildren();
+
+    registros.slice().reverse().forEach((r) => {
+        const item = document.createElement("div");
+        item.className = "registro";
+
+        const nome = document.createElement("strong");
+        nome.textContent = r.aluno;
+
+        const turma = document.createElement("p");
+        turma.textContent = "Turma: " + r.turma;
+
+        const horario = document.createElement("p");
+        horario.textContent = "Horário: " + r.horario;
+
+        const motivo = document.createElement("p");
+        motivo.textContent = "Motivo: " + r.motivo;
+
+        const data = document.createElement("p");
+        data.textContent = "Data: " + r.data;
+
+        item.append(nome, turma, horario, motivo, data);
+        historico.appendChild(item);
+    });
+}
+
+formulario.addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const registro = {
+        aluno: document.getElementById("aluno").value.trim(),
+        turma: document.getElementById("turma").value.trim(),
+        telefone: document.getElementById("telefone").value.trim(),
+        horario: document.getElementById("horario").value,
+        motivo: document.getElementById("motivo").value,
+        justificativa:
+            document.getElementById("justificativa").value.trim(),
+        data: new Date().toLocaleDateString("pt-BR")
+    };
+
+    registros.push(registro);
+    ultimoRegistro = registro;
+
+    salvarDados();
+    registrarHistorico();
+
+    alert("Atraso registrado com sucesso!");
+
+    formulario.reset();
+
+    document.getElementById("horario").value =
+        new Date().toTimeString().slice(0, 5);
+});
+
+function enviarWhatsApp() {
+    const registro = ultimoRegistro;
+
+    if (!registro) {
+        alert("Registre um atraso antes de enviar a mensagem.");
+        return;
+    }
+
+    let telefone = registro.telefone.replace(/\D/g, "");
+
+    if (telefone.length < 10 || telefone.length > 13) {
+        alert("Confira o número de telefone e o DDD.");
+        return;
+    }
+
+    if (!telefone.startsWith("55")) {
+        telefone = "55" + telefone;
+    }
+
+    const mensagem =
+        "Olá, responsável!\n\n" +
+        "Informamos que o aluno " + registro.aluno +
+        ", da turma " + registro.turma +
+        ", chegou com atraso às " + registro.horario + ".\n\n" +
+        "Motivo: " + registro.motivo + "\n" +
+        "Justificativa: " +
+        (registro.justificativa || "Não informada") + "\n" +
+        "Data: " + registro.data + "\n\n" +
+        "Atenciosamente, Escola.";
+
+    const url =
+        "https://wa.me/" + telefone +
+        "?text=" + encodeURIComponent(mensagem);
+
+    window.open(url, "_blank");
+}
+
+function apagarHistorico() {
+    if (!confirm("Deseja apagar todos os registros?")) {
+        return;
+    }
+
+    registros = [];
+    ultimoRegistro = null;
+
+    salvarDados();
+    registrarHistorico();
+}
+
+registrarHistorico();
+</script>
+
+</body>
+</html>
